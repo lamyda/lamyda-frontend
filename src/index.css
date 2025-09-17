@@ -6,6 +6,10 @@
   background-color: #2600c8;
 }
 
+.text-lamyda-primary {
+  color: #2600c8;
+}
+
 .text-lamyda-gray {
   color: #707175;
 }
@@ -140,11 +144,46 @@
     font-style: normal;
     font-variation-settings: "wdth" 100;
   }
+  
+  /* Override Tailwind reset for lists inside TipTap */
+  .tiptap-editor-container ul {
+    list-style-type: disc !important;
+    padding-left: 1.25rem !important;
+  }
+  
+  .tiptap-editor-container ol {
+    list-style-type: decimal !important;
+    padding-left: 1.25rem !important;
+  }
+  
+  .tiptap-editor-container li {
+    display: list-item !important;
+  }
 }
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Força a exibição de listas no TipTap Editor */
+@layer utilities {
+  .tiptap-editor-container .ProseMirror ul {
+    @apply list-disc list-inside ml-4 my-2;
+  }
+  
+  .tiptap-editor-container .ProseMirror ol {
+    @apply list-decimal list-inside ml-4 my-2;
+  }
+  
+  .tiptap-editor-container .ProseMirror li {
+    @apply block my-1;
+  }
+  
+  .tiptap-editor-container .ProseMirror ul li::marker,
+  .tiptap-editor-container .ProseMirror ol li::marker {
+    color: #374151;
+  }
+}
 
 .select-placeholder {
   color: #9ca3af !important;
@@ -209,4 +248,351 @@
 .gm-style .gm-style-iw-c *,
 .gm-style .gm-style-iw-d * {
   border-radius: 0 !important;
+}
+
+/* Estilos para o TipTap Editor */
+.ProseMirror {
+  outline: none;
+  padding: 1rem;
+  min-height: 200px;
+}
+
+/* Container do TipTap - garantir que as listas sejam exibidas */
+.tiptap-editor-container ul,
+.tiptap-editor-container ol {
+  list-style: revert !important;
+  padding-left: 1.5rem !important;
+  margin: 0.5rem 0 !important;
+}
+
+.tiptap-editor-container ul li,
+.tiptap-editor-container ol li {
+  display: list-item !important;
+  list-style: inherit !important;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.ProseMirror h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.ProseMirror h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.ProseMirror h3 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.ProseMirror p {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.ProseMirror ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  list-style-type: disc !important;
+}
+
+.ProseMirror ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  list-style-type: decimal !important;
+}
+
+.ProseMirror ul li {
+  margin: 0.25rem 0;
+  list-style-type: disc !important;
+  display: list-item !important;
+}
+
+.ProseMirror ol li {
+  margin: 0.25rem 0;
+  list-style-type: decimal !important;
+  display: list-item !important;
+}
+
+.ProseMirror li::marker {
+  color: #374151 !important;
+}
+
+/* Garantir que as listas aninhadas funcionem */
+.ProseMirror ul ul {
+  list-style-type: circle !important;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.ProseMirror ul ul ul {
+  list-style-type: square !important;
+}
+
+.ProseMirror ol ol {
+  list-style-type: lower-alpha !important;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.ProseMirror ol ol ol {
+  list-style-type: lower-roman !important;
+}
+
+/* Reset de estilos que podem interferir */
+.ProseMirror ul li::before,
+.ProseMirror ol li::before {
+  display: none !important;
+  content: none !important;
+}
+
+/* Garantir que o conteúdo das listas seja visível */
+.ProseMirror li p {
+  margin: 0;
+  display: inline;
+}
+
+.ProseMirror blockquote {
+  border-left: 4px solid #e5e7eb;
+  margin: 1rem 0;
+  padding-left: 1rem;
+  font-style: italic;
+  color: #6b7280;
+}
+
+.ProseMirror code {
+  background-color: #f3f4f6;
+  color: #1f2937;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+}
+
+.ProseMirror strong {
+  font-weight: bold;
+}
+
+.ProseMirror em {
+  font-style: italic;
+}
+
+/* Estilos de alinhamento de texto */
+.ProseMirror [data-text-align="left"] {
+  text-align: left;
+}
+
+.ProseMirror [data-text-align="center"] {
+  text-align: center;
+}
+
+.ProseMirror [data-text-align="right"] {
+  text-align: right;
+}
+
+.ProseMirror [data-text-align="justify"] {
+  text-align: justify;
+}
+
+.ProseMirror p[style*="text-align: left"] {
+  text-align: left !important;
+}
+
+.ProseMirror p[style*="text-align: center"] {
+  text-align: center !important;
+}
+
+.ProseMirror p[style*="text-align: right"] {
+  text-align: right !important;
+}
+
+.ProseMirror p[style*="text-align: justify"] {
+  text-align: justify !important;
+}
+
+.ProseMirror h1[style*="text-align: center"],
+.ProseMirror h2[style*="text-align: center"],
+.ProseMirror h3[style*="text-align: center"] {
+  text-align: center !important;
+}
+
+.ProseMirror h1[style*="text-align: right"],
+.ProseMirror h2[style*="text-align: right"],
+.ProseMirror h3[style*="text-align: right"] {
+  text-align: right !important;
+}
+
+.ProseMirror h1[style*="text-align: justify"],
+.ProseMirror h2[style*="text-align: justify"],
+.ProseMirror h3[style*="text-align: justify"] {
+  text-align: justify !important;
+}
+
+/* Estilos para imagens no editor */
+.ProseMirror .tiptap-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.375rem;
+  margin: 1rem 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ProseMirror .tiptap-image:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ProseMirror .tiptap-image.ProseMirror-selectednode {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Drag and drop cursor */
+.ProseMirror .ProseMirror-dropcursor {
+  position: relative;
+  pointer-events: none;
+}
+
+.ProseMirror .ProseMirror-dropcursor:after {
+  content: '';
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  top: -1px;
+  bottom: -1px;
+  border: 2px solid #3b82f6;
+  pointer-events: none;
+}
+
+/* Markmap Styles */
+.markmap-container {
+  width: 100%;
+  height: 100%;
+}
+
+.markmap-container svg {
+  font-family: 'Open Sans', sans-serif;
+}
+
+.markmap-node {
+  cursor: pointer;
+}
+
+.markmap-node-circle {
+  fill: #2600c8;
+  stroke: #fff;
+  stroke-width: 2px;
+}
+
+.markmap-node-text {
+  fill: #374151;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.markmap-link {
+  fill: none;
+  stroke: #9ca3af;
+  stroke-width: 2px;
+}
+
+/* Botão AI com gradiente animado suave */
+.ai-button {
+  position: relative;
+  background: white;
+  color: black;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-weight: 500;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.ai-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 2px;
+  background: linear-gradient(
+    45deg,
+    #00bcd4,
+    #4caf50,
+    #ffeb3b,
+    #ff9800,
+    #e91e63,
+    #9c27b0,
+    #00bcd4
+  );
+  background-size: 400% 400%;
+  animation: gradientMove 6s ease-in-out infinite;
+  border-radius: 10px;
+  z-index: -1;
+}
+
+.ai-button::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  background: white;
+  border-radius: 8px;
+  z-index: -1;
+}
+
+@keyframes gradientMove {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.ai-button:hover::before {
+  animation-duration: 3s;
+}
+
+.ai-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ai-button:disabled::before {
+  animation-play-state: paused;
+}
+
+/* Esconder logo do markmap na toolbar */
+.mm-toolbar-brand {
+  display: none !important;
+}
+
+/* Esconder qualquer elemento da logo do markmap */
+.markmap-container .mm-toolbar-brand,
+.markmap-container [class*="brand"],
+.markmap-container [class*="logo"] {
+  display: none !important;
+}
+
+/* Esconder texto "markmap" em elementos SVG */
+.markmap-container svg text[text-anchor="start"] {
+  display: none !important;
 }

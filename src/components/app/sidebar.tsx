@@ -1,7 +1,5 @@
 import { 
   ChartColumn,
-  ChevronDown,
-  UserPlus,
   Users,
   FileStack,
   Workflow,
@@ -10,8 +8,9 @@ import {
   Shield,
   Blocks,
   HelpCircle,
-  DollarSign,
   Building,
+  Video,
+  Bot,
 } from "lucide-react"
 
 import {
@@ -26,42 +25,45 @@ import {
   SidebarHeader
 } from "@/components/ui/sidebar"
 import LamydaLogo from "@/components/app/lamyda-logo"
+import CompanyInformation from "@/components/app/company-information"
+import { useCompany } from "@/contexts/CompanyContext"
+import { useLocation, Link } from "react-router-dom"
 
 // Menu items.
 const items = [
   {
     title: "Dashboard",
-    url: "#",
+    url: "/dashboard",
     icon: ChartColumn,
   },
   {
     title: "Processos",
-    url: "#",
+    url: "/processes",
     icon: ClipboardList,
   },
   {
-    title: "Workflows",
+    title: "Estações de Trabalho",
     url: "#",
-    icon: Workflow,
+    icon: Vault,
   },
   {
-    title: "Documentos",
-    url: "#",
+    title: "Áreas",
+    url: "/areas",
     icon: FileStack,
   },
-  {
-    title: "Times",
-    url: "#",
-    icon: Users,
-  },
+         {
+           title: "Times",
+           url: "/teams",
+           icon: Users,
+         },
 ]
 
 // Menu items.
 const itemsGestao = [
     {
-      title: "Vault",
+      title: "Workflows",
       url: "#",
-      icon: Vault,
+      icon: Workflow,
     },
     {
       title: "Acessos",
@@ -88,9 +90,14 @@ const itemsConfig = [
       icon: Users,
     },
     {
-      title: "Faturamento",
-      url: "#",
-      icon: DollarSign,
+      title: "Teste Upload Vídeo",
+      url: "/video-upload-test",
+      icon: Video,
+    },
+    {
+      title: "Teste Lamyda AI",
+      url: "/ai-process-test",
+      icon: Bot,
     },
     {
       title: "Ajuda",
@@ -100,6 +107,20 @@ const itemsConfig = [
   ]
 
 export default function AppSidebar() {
+  const { companyInfo } = useCompany()
+  const location = useLocation()
+  
+  // Verificar se usuário pode ver configurações (apenas owners e administrators)
+  const canViewSettings = () => {
+    return companyInfo?.userRole === 'owner' || companyInfo?.userRole === 'administrator'
+  }
+
+  // Verificar se um item está ativo
+  const isActiveItem = (url: string) => {
+    if (url === '#') return false
+    return location.pathname === url
+  }
+
   return (
     <Sidebar variant="sidebar">
       <SidebarHeader className="p-6 pb-[19.5px] border-b">
@@ -109,40 +130,55 @@ export default function AppSidebar() {
       </SidebarHeader>
       
         <SidebarContent>
-          {/* Workspace Section */}
-          <div className="px-4 py-3 pt-6 pb-0">
-            <div className="bg-white rounded-lg border border-gray-200 p-3 mb-2">
-              <div className="flex items-center justify-between cursor-pointer mb-3">
-                <div className="flex flex-col">
-                  <div className="text-sm font-medium text-gray-900">Diego's Workspace</div>
-                  <div className="text-xs text-gray-500">1 membro</div>
-                </div>
-                <ChevronDown className="w-4 h-4 text-gray-400" />
-              </div>
-              
-              <hr className="border-gray-200 mb-3" />
-              
-              <button className="flex items-center gap-2 text-sm text-gray-600 hover:bg-gray-50 p-2 rounded-md w-full text-left">
-                <UserPlus className="w-4 h-4 text-gray-400" />
-                <span>Convidar membros</span>
-              </button>
-            </div>
-          </div>
+          <CompanyInformation />
 
         <SidebarGroup className="pt-0">
             <SidebarGroupLabel className="text-gray-500 font-medium px-4">Geral</SidebarGroupLabel>
             <SidebarGroupContent>
                 <SidebarMenu>
-                {items.map((item) => (
+                {items.map((item) => {
+                  const isActive = isActiveItem(item.url)
+                  
+                  return (
                     <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                        <a href={item.url} className="text-gray-600 hover:text-gray-800 px-4 py-2">
-                        <item.icon className="text-gray-500 w-5 h-5" />
-                        <span className="text-gray-600 font-base">{item.title}</span>
-                        </a>
+                        {item.url === '#' ? (
+                          <a 
+                            href={item.url} 
+                            className={`px-4 py-2 ${
+                              isActive 
+                                ? 'text-gray-800 bg-gray-50' 
+                                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                            }`}
+                          >
+                            <item.icon className={`w-5 h-5 ${
+                              isActive ? 'text-gray-700' : 'text-gray-500'
+                            }`} />
+                            <span className={`font-base ${
+                              isActive ? 'text-gray-800 font-medium' : 'text-gray-600'
+                            }`}>{item.title}</span>
+                          </a>
+                        ) : (
+                          <Link 
+                            to={item.url} 
+                            className={`px-4 py-2 ${
+                              isActive 
+                                ? 'text-gray-800 bg-gray-50' 
+                                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                            }`}
+                          >
+                            <item.icon className={`w-5 h-5 ${
+                              isActive ? 'text-gray-700' : 'text-gray-500'
+                            }`} />
+                            <span className={`font-base ${
+                              isActive ? 'text-gray-800 font-medium' : 'text-gray-600'
+                            }`}>{item.title}</span>
+                          </Link>
+                        )}
                     </SidebarMenuButton>
                     </SidebarMenuItem>
-                ))}
+                  )
+                })}
                 </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -151,37 +187,105 @@ export default function AppSidebar() {
             <SidebarGroupLabel className="text-gray-500 font-medium px-4">Gestão</SidebarGroupLabel>
             <SidebarGroupContent>
                 <SidebarMenu>
-                {itemsGestao.map((item) => (
+                {itemsGestao.map((item) => {
+                  const isActive = isActiveItem(item.url)
+                  
+                  return (
                     <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                        <a href={item.url} className="text-gray-600 hover:text-gray-800 px-4 py-2">
-                        <item.icon className="text-gray-500 w-5 h-5" />
-                        <span className="text-gray-600 font-base">{item.title}</span>
-                        </a>
+                        {item.url === '#' ? (
+                          <a 
+                            href={item.url} 
+                            className={`px-4 py-2 ${
+                              isActive 
+                                ? 'text-gray-800 bg-gray-50' 
+                                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                            }`}
+                          >
+                            <item.icon className={`w-5 h-5 ${
+                              isActive ? 'text-gray-700' : 'text-gray-500'
+                            }`} />
+                            <span className={`font-base ${
+                              isActive ? 'text-gray-800 font-medium' : 'text-gray-600'
+                            }`}>{item.title}</span>
+                          </a>
+                        ) : (
+                          <Link 
+                            to={item.url} 
+                            className={`px-4 py-2 ${
+                              isActive 
+                                ? 'text-gray-800 bg-gray-50' 
+                                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                            }`}
+                          >
+                            <item.icon className={`w-5 h-5 ${
+                              isActive ? 'text-gray-700' : 'text-gray-500'
+                            }`} />
+                            <span className={`font-base ${
+                              isActive ? 'text-gray-800 font-medium' : 'text-gray-600'
+                            }`}>{item.title}</span>
+                          </Link>
+                        )}
                     </SidebarMenuButton>
                     </SidebarMenuItem>
-                ))}
+                  )
+                })}
                 </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup className="pt-0">
-            <SidebarGroupLabel className="text-gray-500 font-medium px-4">Configurações</SidebarGroupLabel>
-            <SidebarGroupContent>
-                <SidebarMenu>
-                {itemsConfig.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                        <a href={item.url} className="text-gray-600 hover:text-gray-800 px-4 py-2">
-                        <item.icon className="text-gray-500 w-5 h-5" />
-                        <span className="text-gray-600 font-base">{item.title}</span>
-                        </a>
-                    </SidebarMenuButton>
-                    </SidebarMenuItem>
-                ))}
-                </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {canViewSettings() && (
+          <SidebarGroup className="pt-0">
+              <SidebarGroupLabel className="text-gray-500 font-medium px-4">Configurações</SidebarGroupLabel>
+              <SidebarGroupContent>
+                  <SidebarMenu>
+                  {itemsConfig.map((item) => {
+                    const isActive = isActiveItem(item.url)
+                    
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                          {item.url === '#' ? (
+                            <a 
+                              href={item.url} 
+                              className={`px-4 py-2 ${
+                                isActive 
+                                  ? 'text-gray-800 bg-gray-50' 
+                                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                              }`}
+                            >
+                              <item.icon className={`w-5 h-5 ${
+                                isActive ? 'text-gray-700' : 'text-gray-500'
+                              }`} />
+                              <span className={`font-base ${
+                                isActive ? 'text-gray-800 font-medium' : 'text-gray-600'
+                              }`}>{item.title}</span>
+                            </a>
+                          ) : (
+                            <Link 
+                              to={item.url} 
+                              className={`px-4 py-2 ${
+                                isActive 
+                                  ? 'text-gray-800 bg-gray-50' 
+                                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                              }`}
+                            >
+                              <item.icon className={`w-5 h-5 ${
+                                isActive ? 'text-gray-700' : 'text-gray-500'
+                              }`} />
+                              <span className={`font-base ${
+                                isActive ? 'text-gray-800 font-medium' : 'text-gray-600'
+                              }`}>{item.title}</span>
+                            </Link>
+                          )}
+                      </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )
+                  })}
+                  </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
       </SidebarContent>
     </Sidebar>

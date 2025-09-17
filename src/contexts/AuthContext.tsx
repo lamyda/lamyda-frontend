@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/services/supabase'
 
@@ -25,6 +25,7 @@ interface UserInfo {
   updated_at: string;
 }
 
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -35,7 +36,10 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   forgotPassword: (email: string) => Promise<{ error: string | null }>;
   resetPassword: (password: string) => Promise<{ error: string | null }>;
-  updateCompanyCreated: () => Promise<{ error: string | null }>;
+  updateCompanyCreated: (companyId?: string) => Promise<{ error: string | null }>;
+  processInviteAcceptance: (companyId: string, role: string, invitedBy: string) => Promise<{ error: string | null }>;
+  markPasswordSet: () => Promise<{ error: string | null }>;
+  requiresPasswordChange: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -58,30 +62,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
 
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('user_name, user_email, is_owner, is_company_created, is_password_change_required, created_at, updated_at')
-          .single();
-        
-        if (error) throw error;
-        if (data) {
-          setUserInfo(data);
-        }
-      } catch (error) {
-        console.error('Error fetching user information:', error);
-        setUserInfo(null);
+  const fetchUserInfo = useCallback(async () => {
+    if (!user?.id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('user_name, user_email, is_owner, is_company_created, is_password_change_required, created_at, updated_at')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error) throw error;
+      if (data) {
+        setUserInfo(data);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching user information:', error);
+      setUserInfo(null);
+    }
+  }, [user?.id]);
 
+
+  useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchUserInfo();
-      }
       setLoading(false)
     })
 
@@ -90,9 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchUserInfo();
-      } else {
+      if (!session?.user) {
         setUserInfo(null);
       }
       setLoading(false)
@@ -100,6 +103,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     return () => subscription.unsubscribe()
   }, [])
+
+  // Separar o fetchUserInfo em um useEffect próprio
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserInfo();
+    }
+  }, [user?.id, fetchUserInfo])
+
 
   const signUp = async ({ email, password, name, inviteCode }: UserSignUpData) => {
     try {
@@ -189,34 +200,92 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return { error: error?.message || null };
   };
 
-  const updateCompanyCreated = async () => {
+  const updateCompanyCreated = async (companyId?: string) => {
     if (!user) return { error: 'Usuário não encontrado' };
     
     try {
-      const { error } = await supabase
+      const { error: userUpdateError } = await supabase
         .from('users')
         .update({ is_company_created: true })
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (userUpdateError) throw userUpdateError;
+
+      if (companyId) {
+        const { error: companyUserError } = await supabase
+          .from('company_users')
+          .insert({
+            company_id: companyId,
+            user_id: user.id,
+            role: 'owner',
+            added_by: user.id,
+            is_active: true
+          });
+
+        if (companyUserError) throw companyUserError;
+      }
       
-      // Refresh user info
       const { data, error: fetchError } = await supabase
         .from('users')
         .select('user_name, user_email, is_owner, is_company_created, is_password_change_required, created_at, updated_at')
         .eq('user_id', user.id)
         .single();
-      
+
       if (fetchError) throw fetchError;
       if (data) {
         setUserInfo(data);
       }
+
       
       return { error: null };
     } catch (error: any) {
       console.error('Error updating company created status:', error);
       return { error: error.message || 'Erro ao atualizar status' };
     }
+  };
+
+  const processInviteAcceptance = async (companyId: string, role: string, invitedBy: string) => {
+    if (!user) return { error: 'Usuário não encontrado' };
+    
+    try {
+      const { error } = await supabase.rpc('process_invite_acceptance', {
+        p_company_id: companyId,
+        p_role: role,
+        p_invited_by: invitedBy
+      });
+
+      if (error) throw error;
+      
+      // Refresh user info to get updated password_change_required status
+      await fetchUserInfo();
+      
+      return { error: null };
+    } catch (error: any) {
+      console.error('Error processing invite acceptance:', error);
+      return { error: error.message || 'Erro ao processar convite' };
+    }
+  };
+
+  const markPasswordSet = async () => {
+    if (!user) return { error: 'Usuário não encontrado' };
+    
+    try {
+      const { error } = await supabase.rpc('mark_password_set');
+
+      if (error) throw error;
+      
+      // Refresh user info to get updated password_change_required status
+      await fetchUserInfo();
+      
+      return { error: null };
+    } catch (error: any) {
+      console.error('Error marking password as set:', error);
+      return { error: error.message || 'Erro ao atualizar senha' };
+    }
+  };
+
+  const requiresPasswordChange = () => {
+    return userInfo?.is_password_change_required === true;
   };
 
   const value = {
@@ -230,6 +299,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     resetPassword,
     userInfo,
     updateCompanyCreated,
+    processInviteAcceptance,
+    markPasswordSet,
+    requiresPasswordChange,
   }
 
   return (

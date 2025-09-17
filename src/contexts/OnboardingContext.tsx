@@ -84,7 +84,13 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
         throw new Error(data?.message || 'Erro inesperado ao finalizar onboarding')
       }
 
-      await updateCompanyCreated()
+      const companyId = data?.company?.id
+      if (companyId) {
+        await updateCompanyCreated(companyId)
+      } else {
+        console.warn('Company ID not found in onboarding response, calling updateCompanyCreated without ID')
+        await updateCompanyCreated()
+      }
 
       console.log('Onboarding finalizado com sucesso:', data)
       navigate('/dashboard')

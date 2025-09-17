@@ -31,53 +31,49 @@ export default function UserAccount({ isFirstOnboarding }: UserAccountProps) {
   }
 
   return (
-    <div className="absolute top-4 right-4 z-10">
-      {isFirstOnboarding ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div className="flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-100 rounded-md transition-colors">
-              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-gray-600">
-                  {userInfo ? getInitials(userInfo.user_name) : '..'}
-                </span>
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="text-sm font-medium text-gray-900">
-                  {userInfo ? capitalizeWords(userInfo.user_name) : 'Carregando...'}
-                </span>
-                <span className="text-xs text-gray-500">
-                  {userInfo ? userInfo.user_email : ''}
-                </span>
-              </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        {isFirstOnboarding ? (
+          <div className="flex items-center gap-3 p-2 cursor-pointer hover:bg-gray-100 rounded-md transition-colors">
+            <div className="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center">
+              <span className="text-sm font-medium text-gray-600">
+                {userInfo ? getInitials(userInfo.user_name) : '..'}
+              </span>
             </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 rounded-none" align="end">
-            <DropdownMenuItem
-              onClick={signOut}
-              className="text-gray-900 focus:text-gray-900 focus:bg-gray-50 cursor-pointer"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Sair</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ) : (
-        <div className="flex items-center gap-3 p-3 rounded-md">
-          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+            <div className="flex flex-col text-left">
+              <span className="text-sm font-medium text-gray-900">
+                {userInfo ? capitalizeWords(userInfo.user_name) : 'Carregando...'}
+              </span>
+              <span className="text-xs text-gray-500">
+                {userInfo ? userInfo.user_email : ''}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors">
             <span className="text-sm font-medium text-gray-600">
               {userInfo ? getInitials(userInfo.user_name) : '..'}
             </span>
           </div>
-          <div className="flex flex-col text-left">
-            <span className="text-sm font-medium text-gray-900">
-              {userInfo ? capitalizeWords(userInfo.user_name) : 'Carregando...'}
-            </span>
-            <span className="text-xs text-gray-500">
-              {userInfo ? userInfo.user_email : ''}
-            </span>
-          </div>
+        )}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56 shadow-none" align="end">
+        <div className="px-3 py-2 border-b">
+          <p className="text-sm font-medium text-gray-900">
+            {userInfo ? capitalizeWords(userInfo.user_name) : 'Carregando...'}
+          </p>
+          <p className="text-xs text-gray-500">
+            {userInfo ? userInfo.user_email : ''}
+          </p>
         </div>
-      )}
-    </div>
+        <DropdownMenuItem
+          onClick={signOut}
+          className="text-gray-900 focus:text-gray-900 focus:bg-gray-50 cursor-pointer"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Sair</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
